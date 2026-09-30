@@ -1,0 +1,1018 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>NexusDB - Advanced Modern Admin</title>
+  <style>
+    /* ==========================================================================
+       1. CSS VARIABLES & THEMING
+       ========================================================================== */
+    :root {
+      /* Light Theme (Default) */
+      --bg-body: #f8fafc;
+      --bg-sidebar: #0f172a;
+      --surface: #ffffff;
+      --surface-hover: #f1f5f9;
+      --primary: #6366f1;
+      --primary-hover: #4f46e5;
+      --primary-light: #e0e7ff;
+      --danger: #ef4444;
+      --danger-hover: #dc2626;
+      --danger-light: #fee2e2;
+      --success: #10b981;
+      --success-light: #d1fae5;
+      --warning: #f59e0b;
+      --warning-light: #fef3c7;
+      --text-main: #1e293b;
+      --text-muted: #64748b;
+      --border: #e2e8f0;
+      
+      /* Shadows & Radius */
+      --shadow-sm: 0 1px 2px 0 rgb(0 0 0 / 0.05);
+      --shadow-md: 0 4px 6px -1px rgb(0 0 0 / 0.1);
+      --shadow-lg: 0 10px 15px -3px rgb(0 0 0 / 0.1);
+      --radius-sm: 6px;
+      --radius-md: 8px;
+      --radius-lg: 12px;
+      --radius-full: 9999px;
+      
+      /* Layout */
+      --sidebar-width: 260px;
+      --header-height: 70px;
+      --transition-speed: 0.3s;
+    }
+
+    [data-theme="dark"] {
+      --bg-body: #0f172a;
+      --bg-sidebar: #020617;
+      --surface: #1e293b;
+      --surface-hover: #334155;
+      --primary: #818cf8;
+      --primary-hover: #6366f1;
+      --primary-light: #312e81;
+      --danger: #f87171;
+      --danger-hover: #ef4444;
+      --danger-light: #7f1d1d;
+      --success: #34d399;
+      --success-light: #064e3b;
+      --warning: #fbbf24;
+      --warning-light: #78350f;
+      --text-main: #f8fafc;
+      --text-muted: #94a3b8;
+      --border: #334155;
+    }
+
+    /* ==========================================================================
+       2. RESET & BASE STYLES
+       ========================================================================== */
+    * { 
+      box-sizing: border-box; 
+      margin: 0; 
+      padding: 0; 
+      font-family: 'Inter', system-ui, -apple-system, sans-serif; 
+    }
+    
+    body { 
+      display: flex; 
+      height: 100vh; 
+      background: var(--bg-body); 
+      color: var(--text-main); 
+      overflow: hidden; 
+      transition: background var(--transition-speed), color var(--transition-speed);
+    }
+
+    h1, h2, h3, h4, h5, h6 { color: var(--text-main); font-weight: 600; }
+    a { text-decoration: none; color: var(--primary); }
+    ul { list-style: none; }
+    
+    /* Scrollbar */
+    ::-webkit-scrollbar { width: 8px; height: 8px; }
+    ::-webkit-scrollbar-track { background: transparent; }
+    ::-webkit-scrollbar-thumb { background: var(--border); border-radius: 4px; }
+    ::-webkit-scrollbar-thumb:hover { background: var(--text-muted); }
+
+    /* ==========================================================================
+       3. LAYOUT & NAVIGATION
+       ========================================================================== */
+    /* Sidebar */
+    .sidebar { 
+      width: var(--sidebar-width); 
+      background: var(--bg-sidebar); 
+      color: #f8fafc; 
+      display: flex; 
+      flex-direction: column; 
+      transition: width var(--transition-speed); 
+      z-index: 20;
+    }
+    
+    .sidebar-header { 
+      height: var(--header-height);
+      padding: 0 1.5rem; 
+      font-size: 1.25rem; 
+      font-weight: 800; 
+      border-bottom: 1px solid rgba(255,255,255,0.1); 
+      display: flex; 
+      align-items: center; 
+      gap: 12px;
+    }
+    
+    .nav-list { padding: 1.5rem 1rem; flex: 1; display: flex; flex-direction: column; gap: 0.5rem;}
+    
+    .nav-item { 
+      padding: 0.85rem 1rem; 
+      border-radius: var(--radius-md); 
+      cursor: pointer; 
+      color: #94a3b8; 
+      font-weight: 500; 
+      display: flex; 
+      align-items: center; 
+      gap: 12px; 
+      transition: all 0.2s ease; 
+    }
+    
+    .nav-item:hover { background: rgba(255,255,255,0.05); color: #f8fafc; }
+    .nav-item.active { background: var(--primary); color: white; box-shadow: var(--shadow-md); }
+    
+    /* Main Content Wrapper */
+    .main-wrapper { 
+      flex: 1; 
+      display: flex; 
+      flex-direction: column; 
+      overflow-y: auto; 
+      position: relative;
+    }
+    
+    /* Topbar */
+    .topbar { 
+      height: var(--header-height);
+      background: var(--surface); 
+      padding: 0 2rem; 
+      border-bottom: 1px solid var(--border); 
+      display: flex; 
+      justify-content: space-between; 
+      align-items: center; 
+      position: sticky; 
+      top: 0; 
+      z-index: 10; 
+      transition: background var(--transition-speed);
+    }
+    
+    .topbar-left { display: flex; align-items: center; gap: 1rem; }
+    .topbar-title { font-size: 1.25rem; font-weight: 600; }
+    
+    .user-profile { display: flex; align-items: center; gap: 12px; cursor: pointer; padding: 0.5rem; border-radius: var(--radius-md); transition: background 0.2s; }
+    .user-profile:hover { background: var(--surface-hover); }
+    .user-info { display: flex; flex-direction: column; align-items: flex-end; }
+    .user-name { font-weight: 600; font-size: 0.9rem; }
+    .user-role { font-size: 0.75rem; color: var(--text-muted); }
+    .avatar { width: 40px; height: 40px; border-radius: 50%; background: var(--primary); color: white; display: flex; align-items: center; justify-content: center; font-weight: bold; font-size: 1.1rem; }
+
+    /* Content Area */
+    .content-area { padding: 2rem; max-width: 1600px; margin: 0 auto; width: 100%; display: flex; flex-direction: column; gap: 2rem;}
+    
+    /* View Management */
+    .view-section { display: none; animation: fadeIn 0.4s ease forwards; }
+    .view-section.active { display: flex; flex-direction: column; gap: 1.5rem; }
+    @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+
+    /* ==========================================================================
+       4. UI COMPONENTS (CARDS, BUTTONS, FORMS, BADGES)
+       ========================================================================== */
+    /* Cards */
+    .card { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius-lg); padding: 1.5rem; box-shadow: var(--shadow-sm); transition: border var(--transition-speed), background var(--transition-speed); }
+    .card-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem; padding-bottom: 1rem; border-bottom: 1px solid var(--border); }
+    .card-title { font-size: 1.1rem; font-weight: 700; display: flex; align-items: center; gap: 8px;}
+    
+    /* Stats Grid */
+    .stats-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 1.5rem; }
+    .stat-card { background: var(--surface); padding: 1.5rem; border-radius: var(--radius-lg); border: 1px solid var(--border); display: flex; align-items: center; gap: 1.5rem; box-shadow: var(--shadow-sm); transition: transform 0.2s;}
+    .stat-card:hover { transform: translateY(-3px); box-shadow: var(--shadow-md); }
+    .stat-icon { width: 56px; height: 56px; border-radius: 14px; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
+    .stat-icon.primary { background: var(--primary-light); color: var(--primary); }
+    .stat-icon.success { background: var(--success-light); color: var(--success); }
+    .stat-icon.warning { background: var(--warning-light); color: var(--warning); }
+    .stat-icon.danger { background: var(--danger-light); color: var(--danger); }
+    .stat-details { flex: 1; }
+    .stat-details h4 { color: var(--text-muted); font-size: 0.85rem; text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 0.25rem; }
+    .stat-details span { font-size: 1.75rem; font-weight: 700; color: var(--text-main); line-height: 1.2;}
+
+    /* Buttons */
+    .btn { display: inline-flex; align-items: center; justify-content: center; gap: 8px; padding: 0.6rem 1.2rem; border: none; border-radius: var(--radius-md); font-size: 0.9rem; font-weight: 600; cursor: pointer; transition: all 0.2s; white-space: nowrap; }
+    .btn:disabled { opacity: 0.6; cursor: not-allowed; }
+    .btn svg { width: 18px; height: 18px; }
+    .btn-primary { background: var(--primary); color: white; }
+    .btn-primary:hover:not(:disabled) { background: var(--primary-hover); box-shadow: var(--shadow-md); }
+    .btn-secondary { background: var(--surface); color: var(--text-main); border: 1px solid var(--border); }
+    .btn-secondary:hover:not(:disabled) { background: var(--surface-hover); }
+    .btn-danger { background: var(--danger); color: white; }
+    .btn-danger:hover:not(:disabled) { background: var(--danger-hover); }
+    .btn-icon { padding: 0.5rem; border-radius: var(--radius-md); background: transparent; color: var(--text-muted); border: 1px solid transparent; cursor: pointer; transition: 0.2s; }
+    .btn-icon:hover { background: var(--surface-hover); color: var(--text-main); }
+    
+    /* Forms */
+    .form-group { margin-bottom: 1.25rem; }
+    label { display: block; font-size: 0.85rem; font-weight: 600; color: var(--text-main); margin-bottom: 0.5rem; }
+    input[type="text"], input[type="email"], textarea, select { width: 100%; padding: 0.75rem 1rem; border: 1px solid var(--border); border-radius: var(--radius-md); font-size: 0.95rem; background: var(--bg-body); color: var(--text-main); transition: all 0.2s; }
+    input:focus, textarea:focus, select:focus { border-color: var(--primary); outline: none; box-shadow: 0 0 0 3px var(--primary-light); background: var(--surface); }
+    textarea { resize: vertical; min-height: 120px; }
+    .input-group { display: flex; gap: 1rem; }
+    .input-group > * { flex: 1; }
+
+    /* Toggle Switch */
+    .toggle-switch { position: relative; display: inline-block; width: 50px; height: 26px; }
+    .toggle-switch input { opacity: 0; width: 0; height: 0; }
+    .slider { position: absolute; cursor: pointer; top: 0; left: 0; right: 0; bottom: 0; background-color: var(--border); transition: .4s; border-radius: 34px; }
+    .slider:before { position: absolute; content: ""; height: 18px; width: 18px; left: 4px; bottom: 4px; background-color: white; transition: .4s; border-radius: 50%; }
+    input:checked + .slider { background-color: var(--primary); }
+    input:checked + .slider:before { transform: translateX(24px); }
+
+    /* Badges */
+    .badge { padding: 4px 10px; border-radius: var(--radius-full); font-size: 0.75rem; font-weight: 700; letter-spacing: 0.02em; }
+    .badge-primary { background: var(--primary-light); color: var(--primary); }
+    .badge-success { background: var(--success-light); color: var(--success); }
+    .badge-outline { background: transparent; border: 1px solid var(--border); color: var(--text-muted); }
+
+    /* ==========================================================================
+       5. DATA TABLE & LISTS (Records View)
+       ========================================================================== */
+    .toolbar { display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem; gap: 1rem; flex-wrap: wrap; }
+    .search-box { position: relative; width: 100%; max-width: 400px; }
+    .search-box input { padding-left: 2.5rem; }
+    .search-box svg { position: absolute; left: 12px; top: 50%; transform: translateY(-50%); color: var(--text-muted); width: 18px; height: 18px; }
+
+    .table-container { overflow-x: auto; border-radius: var(--radius-md); border: 1px solid var(--border); }
+    table { width: 100%; border-collapse: collapse; text-align: left; }
+    th { background: var(--surface-hover); padding: 1rem; font-size: 0.85rem; font-weight: 600; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.05em; border-bottom: 2px solid var(--border); }
+    td { padding: 1rem; border-bottom: 1px solid var(--border); color: var(--text-main); font-size: 0.95rem; vertical-align: top; }
+    tr:last-child td { border-bottom: none; }
+    tr:hover td { background: var(--surface-hover); }
+    
+    .cell-id { font-weight: 600; color: var(--text-muted); width: 80px; }
+    .cell-title { font-weight: 600; max-width: 250px; }
+    .cell-desc { color: var(--text-muted); max-width: 400px; overflow: hidden; text-overflow: ellipsis; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; }
+    .cell-actions { width: 120px; white-space: nowrap; }
+    
+    .pagination { display: flex; justify-content: space-between; align-items: center; padding-top: 1.5rem; margin-top: auto; }
+    .page-info { color: var(--text-muted); font-size: 0.9rem; }
+    .page-controls { display: flex; gap: 0.5rem; }
+    
+    .empty-state { padding: 4rem 2rem; text-align: center; color: var(--text-muted); display: flex; flex-direction: column; align-items: center; gap: 1rem; }
+    .empty-state svg { width: 64px; height: 64px; opacity: 0.5; }
+
+    /* ==========================================================================
+       6. MODALS & TOASTS
+       ========================================================================== */
+    .modal-overlay { position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.5); backdrop-filter: blur(4px); display: flex; justify-content: center; align-items: center; z-index: 100; opacity: 0; visibility: hidden; transition: all 0.3s; }
+    .modal-overlay.active { opacity: 1; visibility: visible; }
+    .modal-content { background: var(--surface); width: 100%; max-width: 500px; border-radius: var(--radius-lg); padding: 2rem; box-shadow: var(--shadow-lg); transform: translateY(20px); transition: all 0.3s; max-height: 90vh; overflow-y: auto;}
+    .modal-overlay.active .modal-content { transform: translateY(0); }
+    .modal-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem; }
+    .modal-close { background: transparent; border: none; cursor: pointer; color: var(--text-muted); }
+    
+    #toastContainer { position: fixed; bottom: 24px; right: 24px; z-index: 200; display: flex; flex-direction: column; gap: 10px; }
+    .toast { padding: 14px 20px; border-radius: var(--radius-md); background: var(--text-main); color: var(--bg-body); font-size: 0.95rem; font-weight: 500; box-shadow: var(--shadow-lg); display: flex; align-items: center; gap: 12px; animation: slideIn 0.3s cubic-bezier(0.16, 1, 0.3, 1); min-width: 250px; }
+    .toast.success { border-left: 4px solid var(--success); }
+    .toast.error { border-left: 4px solid var(--danger); }
+    .toast.info { border-left: 4px solid var(--primary); }
+    @keyframes slideIn { from { transform: translateX(100%); opacity: 0; } to { transform: translateX(0); opacity: 1; } }
+
+    /* ==========================================================================
+       7. DASHBOARD SPECIFICS (Activity Timeline, Skeletons)
+       ========================================================================== */
+    .activity-list { display: flex; flex-direction: column; gap: 1.5rem; padding-top: 0.5rem; }
+    .activity-item { display: flex; gap: 1rem; }
+    .activity-marker { width: 12px; height: 12px; border-radius: 50%; background: var(--primary); border: 2px solid var(--primary-light); margin-top: 4px; position: relative; }
+    .activity-item:not(:last-child) .activity-marker::after { content: ''; position: absolute; top: 12px; left: 50%; transform: translateX(-50%); width: 2px; height: calc(100% + 1.5rem); background: var(--border); }
+    .activity-content p { font-size: 0.95rem; margin-bottom: 0.25rem; }
+    .activity-time { font-size: 0.8rem; color: var(--text-muted); }
+
+    .skeleton { background: linear-gradient(90deg, var(--surface-hover) 25%, var(--border) 50%, var(--surface-hover) 75%); background-size: 200% 100%; animation: loading 1.5s infinite; border-radius: var(--radius-sm); }
+    .skeleton-text { height: 20px; width: 100%; margin-bottom: 10px; }
+    .skeleton-text.short { width: 60%; }
+    @keyframes loading { 0% { background-position: 200% 0; } 100% { background-position: -200% 0; } }
+
+    /* Responsive Design */
+    @media (max-width: 1024px) {
+      .sidebar { width: 80px; }
+      .sidebar span.nav-text, .sidebar-header span { display: none; }
+      .sidebar-header { justify-content: center; padding: 0; }
+      .nav-item { justify-content: center; padding: 1rem; }
+    }
+    @media (max-width: 768px) {
+      .stats-grid { grid-template-columns: 1fr; }
+      .toolbar { flex-direction: column; align-items: stretch; }
+      .search-box { max-width: 100%; }
+      .hide-mobile { display: none; }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- ================= SIDEBAR ================= -->
+  <aside class="sidebar" id="sidebar">
+    <div class="sidebar-header">
+      <svg width="28" height="28" fill="none" stroke="var(--primary)" stroke-width="2.5" viewBox="0 0 24 24"><path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"></path></svg>
+      <span>NexusDB</span>
+    </div>
+    <ul class="nav-list">
+      <li class="nav-item active" data-target="dashboard">
+        <svg width="22" height="22" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path><polyline points="9 22 9 12 15 12 15 22"></polyline></svg>
+        <span class="nav-text">Dashboard</span>
+      </li>
+      <li class="nav-item" data-target="records">
+        <svg width="22" height="22" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M12 20h9M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"></path></svg>
+        <span class="nav-text">Records</span>
+      </li>
+      <li class="nav-item" data-target="settings">
+        <svg width="22" height="22" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"></circle><path d="M19.4 15a1.65 1.65 0 00.33 1.82l.06.06a2 2 0 010 2.83 2 2 0 01-2.83 0l-.06-.06a1.65 1.65 0 00-1.82-.33 1.65 1.65 0 00-1 1.51V21a2 2 0 01-2 2 2 2 0 01-2-2v-.09A1.65 1.65 0 009 19.4a1.65 1.65 0 00-1.82.33l-.06.06a2 2 0 01-2.83 0 2 2 0 010-2.83l.06-.06a1.65 1.65 0 00.33-1.82 1.65 1.65 0 00-1.51-1H3a2 2 0 01-2-2 2 2 0 012-2h.09A1.65 1.65 0 004.6 9a1.65 1.65 0 00-.33-1.82l-.06-.06a2 2 0 010-2.83 2 2 0 012.83 0l.06.06a1.65 1.65 0 001.82.33H9a1.65 1.65 0 001-1.51V3a2 2 0 012-2 2 2 0 012 2v.09a1.65 1.65 0 001 1.51 1.65 1.65 0 001.82-.33l.06-.06a2 2 0 012.83 0 2 2 0 010 2.83l-.06.06a1.65 1.65 0 00-.33 1.82V9a1.65 1.65 0 001.51 1H21a2 2 0 012 2 2 2 0 01-2 2h-.09a1.65 1.65 0 00-1.51 1z"></path></svg>
+        <span class="nav-text">Settings</span>
+      </li>
+    </ul>
+  </aside>
+
+  <!-- ================= MAIN WRAPPER ================= -->
+  <div class="main-wrapper">
+    <!-- Topbar -->
+    <header class="topbar">
+      <div class="topbar-left">
+        <h2 class="topbar-title" id="topbar-title">Dashboard Overview</h2>
+      </div>
+      <div class="user-profile">
+        <div class="user-info hide-mobile">
+          <span class="user-name">Admin User</span>
+          <span class="user-role">System Administrator</span>
+        </div>
+        <div class="avatar">A</div>
+      </div>
+    </header>
+
+    <main class="content-area">
+      
+      <!-- ================= VIEW 1: DASHBOARD ================= -->
+      <section id="view-dashboard" class="view-section active">
+        <!-- Stats -->
+        <div class="stats-grid">
+          <div class="stat-card">
+            <div class="stat-icon primary"><svg width="28" height="28" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M4 6h16M4 10h16M4 14h16M4 18h16"></path></svg></div>
+            <div class="stat-details"><h4>Total Records</h4><span id="dash-total">0</span></div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-icon success"><svg width="28" height="28" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg></div>
+            <div class="stat-details"><h4>Data Integrity</h4><span>100%</span></div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-icon warning"><svg width="28" height="28" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg></div>
+            <div class="stat-details"><h4>Last Update</h4><span id="dash-time">Just now</span></div>
+          </div>
+        </div>
+
+        <div style="display: grid; grid-template-columns: 2fr 1fr; gap: 1.5rem;">
+          <!-- Quick Action Card -->
+          <div class="card">
+            <div class="card-header">
+              <span class="card-title">System Status</span>
+            </div>
+            <p style="color: var(--text-muted); margin-bottom: 1.5rem; line-height: 1.6;">
+              NexusDB is currently running smoothly. LocalStorage persistence is active. All data modifications in the Records tab are saved directly to your browser, ensuring no data loss on refresh. 
+            </p>
+            <div style="background: var(--surface-hover); padding: 1.5rem; border-radius: var(--radius-md); border: 1px dashed var(--border);">
+              <h4 style="margin-bottom: 0.5rem;">Storage Usage</h4>
+              <div style="width: 100%; height: 10px; background: var(--border); border-radius: 5px; overflow: hidden; margin-bottom: 0.5rem;">
+                <div id="storage-bar" style="height: 100%; background: var(--primary); width: 2%; transition: width 0.5s;"></div>
+              </div>
+              <small style="color: var(--text-muted);" id="storage-text">Using approx 2% of local storage quota.</small>
+            </div>
+          </div>
+
+          <!-- Activity Timeline -->
+          <div class="card">
+            <div class="card-header">
+              <span class="card-title">Recent Activity</span>
+            </div>
+            <div class="activity-list" id="activity-feed">
+              <!-- Populated by JS -->
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- ================= VIEW 2: RECORDS ================= -->
+      <section id="view-records" class="view-section">
+        <div class="card" style="flex: 1; display: flex; flex-direction: column;">
+          
+          <!-- Toolbar -->
+          <div class="toolbar">
+            <div class="search-box">
+              <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path></svg>
+              <input type="text" id="searchInput" placeholder="Search records by title or content...">
+            </div>
+            <div style="display: flex; gap: 0.75rem;">
+              <button class="btn btn-secondary" id="btnRefreshList" title="Reload from API">
+                <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"></path></svg>
+                <span class="hide-mobile">Seed API</span>
+              </button>
+              <button class="btn btn-primary" id="btnOpenAddModal">
+                <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path></svg>
+                New Record
+              </button>
+            </div>
+          </div>
+
+          <!-- Data Table -->
+          <div class="table-container">
+            <table>
+              <thead>
+                <tr>
+                  <th style="width: 80px;">ID</th>
+                  <th>Title</th>
+                  <th class="hide-mobile">Description</th>
+                  <th style="text-align: right;">Actions</th>
+                </tr>
+              </thead>
+              <tbody id="tableBody">
+                <!-- Data injects here -->
+              </tbody>
+            </table>
+          </div>
+
+          <!-- Pagination -->
+          <div class="pagination">
+            <span class="page-info" id="pageInfo">Showing 0 of 0 entries</span>
+            <div class="page-controls">
+              <button class="btn btn-secondary" id="btnPrevPage" disabled>Previous</button>
+              <button class="btn btn-secondary" id="btnNextPage" disabled>Next</button>
+            </div>
+          </div>
+
+        </div>
+      </section>
+
+      <!-- ================= VIEW 3: SETTINGS ================= -->
+      <section id="view-settings" class="view-section">
+        
+        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(400px, 1fr)); gap: 1.5rem;">
+          <!-- Profile Settings -->
+          <div class="card">
+            <div class="card-header">
+              <span class="card-title">Profile Settings</span>
+            </div>
+            <form onsubmit="event.preventDefault(); window.showToast('Profile updated!', 'success');">
+              <div class="input-group">
+                <div class="form-group">
+                  <label>First Name</label>
+                  <input type="text" value="Admin">
+                </div>
+                <div class="form-group">
+                  <label>Last Name</label>
+                  <input type="text" value="User">
+                </div>
+              </div>
+              <div class="form-group">
+                <label>Email Address</label>
+                <input type="email" value="admin@nexusdb.local">
+              </div>
+              <button type="submit" class="btn btn-primary">Save Profile</button>
+            </form>
+          </div>
+
+          <!-- App Preferences -->
+          <div class="card">
+            <div class="card-header">
+              <span class="card-title">App Preferences</span>
+            </div>
+            
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem; padding-bottom: 1rem; border-bottom: 1px solid var(--border);">
+              <div>
+                <strong style="display: block; margin-bottom: 4px;">Dark Mode</strong>
+                <span style="font-size: 0.85rem; color: var(--text-muted);">Toggle dark theme interface</span>
+              </div>
+              <label class="toggle-switch">
+                <input type="checkbox" id="themeToggle">
+                <span class="slider"></span>
+              </label>
+            </div>
+
+            <div style="display: flex; justify-content: space-between; align-items: center;">
+              <div>
+                <strong style="display: block; margin-bottom: 4px; color: var(--danger);">Danger Zone</strong>
+                <span style="font-size: 0.85rem; color: var(--text-muted);">Permanently delete all local data</span>
+              </div>
+              <button class="btn btn-danger" id="btnWipeData">Wipe Database</button>
+            </div>
+          </div>
+        </div>
+      </section>
+    </main>
+  </div>
+
+  <!-- ================= MODALS & OVERLAYS ================= -->
+  
+  <!-- Add/Edit Modal -->
+  <div class="modal-overlay" id="crudModal">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h3 id="modalTitle">Create New Record</h3>
+        <button class="modal-close" id="btnCloseModal">
+          <svg width="24" height="24" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12"></path></svg>
+        </button>
+      </div>
+      <form id="recordForm">
+        <input type="hidden" id="recordId">
+        <div class="form-group">
+          <label for="recordTitle">Title <span style="color:var(--danger)">*</span></label>
+          <input type="text" id="recordTitle" required placeholder="E.g., Quarterly Financial Report">
+        </div>
+        <div class="form-group">
+          <label for="recordBody">Description <span style="color:var(--danger)">*</span></label>
+          <textarea id="recordBody" required placeholder="Enter detailed information..."></textarea>
+        </div>
+        <div style="display: flex; justify-content: flex-end; gap: 10px; margin-top: 2rem;">
+          <button type="button" class="btn btn-secondary" id="btnCancelModal">Cancel</button>
+          <button type="submit" class="btn btn-primary" id="btnSaveRecord">Save Record</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- Toast Container -->
+  <div id="toastContainer"></div>
+
+  <!-- ================= JAVASCRIPT LOGIC ================= -->
+  <script>
+    /** 
+     * ==========================================
+     * STATE & CONSTANTS
+     * ==========================================
+     */
+    const DB_KEY = 'nexus_db_records';
+    const API_URL = 'https://jsonplaceholder.typicode.com/posts';
+    
+    let state = {
+      records: [],
+      filteredRecords: [],
+      currentPage: 1,
+      itemsPerPage: 6,
+      currentView: 'dashboard',
+      activities: []
+    };
+
+    /** 
+     * ==========================================
+     * DOM ELEMENTS
+     * ==========================================
+     */
+    // Navigation
+    const navItems = document.querySelectorAll('.nav-item');
+    const viewSections = document.querySelectorAll('.view-section');
+    const topbarTitle = document.getElementById('topbar-title');
+    
+    // Dashboard
+    const dashTotal = document.getElementById('dash-total');
+    const dashTime = document.getElementById('dash-time');
+    const activityFeed = document.getElementById('activity-feed');
+    const storageBar = document.getElementById('storage-bar');
+    const storageText = document.getElementById('storage-text');
+
+    // Records / Table
+    const tableBody = document.getElementById('tableBody');
+    const searchInput = document.getElementById('searchInput');
+    const btnRefreshList = document.getElementById('btnRefreshList');
+    
+    // Pagination
+    const btnPrevPage = document.getElementById('btnPrevPage');
+    const btnNextPage = document.getElementById('btnNextPage');
+    const pageInfo = document.getElementById('pageInfo');
+
+    // Modal / Forms
+    const crudModal = document.getElementById('crudModal');
+    const recordForm = document.getElementById('recordForm');
+    const modalTitle = document.getElementById('modalTitle');
+    const recordId = document.getElementById('recordId');
+    const recordTitle = document.getElementById('recordTitle');
+    const recordBody = document.getElementById('recordBody');
+    const btnOpenAddModal = document.getElementById('btnOpenAddModal');
+    const btnCloseModal = document.getElementById('btnCloseModal');
+    const btnCancelModal = document.getElementById('btnCancelModal');
+    
+    // Settings
+    const themeToggle = document.getElementById('themeToggle');
+    const btnWipeData = document.getElementById('btnWipeData');
+
+    /** 
+     * ==========================================
+     * INITIALIZATION
+     * ==========================================
+     */
+    async function initApp() {
+      // 1. Load Theme
+      const savedTheme = localStorage.getItem('nexus_theme') || 'light';
+      if(savedTheme === 'dark') {
+        document.body.setAttribute('data-theme', 'dark');
+        themeToggle.checked = true;
+      }
+
+      // 2. Load Data (LocalStorage or fetch from API if empty)
+      const localData = localStorage.getItem(DB_KEY);
+      if (localData) {
+        state.records = JSON.parse(localData);
+        state.filteredRecords = [...state.records];
+        logActivity('System loaded from local storage');
+        renderCurrentView();
+      } else {
+        await seedFromAPI();
+      }
+
+      // 3. Setup Listeners
+      setupEventListeners();
+    }
+
+    /** 
+     * ==========================================
+     * DATA MANAGEMENT (CRUD)
+     * ==========================================
+     */
+    async function seedFromAPI() {
+      showToast('Fetching seed data from API...', 'info');
+      tableBody.innerHTML = generateSkeletons(5);
+      
+      try {
+        const res = await fetch(`${API_URL}?_limit=15`);
+        if(!res.ok) throw new Error('API Error');
+        const data = await res.json();
+        
+        // Transform data slightly to look realistic
+        state.records = data.map(item => ({
+          id: item.id,
+          title: capitalize(item.title.substring(0, 40)),
+          body: capitalize(item.body),
+          created_at: new Date().toISOString()
+        }));
+        
+        state.records.sort((a,b) => b.id - a.id); // Newest first
+        saveToLocal();
+        state.filteredRecords = [...state.records];
+        logActivity(`Seeded ${data.length} records from external API`);
+        showToast('Database seeded successfully', 'success');
+        
+      } catch (err) {
+        showToast('Failed to reach API. Starting empty.', 'error');
+        state.records = [];
+        state.filteredRecords = [];
+      }
+      
+      renderCurrentView();
+    }
+
+    function saveToLocal() {
+      localStorage.setItem(DB_KEY, JSON.stringify(state.records));
+      updateStorageMetrics();
+    }
+
+    function handleSaveRecord(e) {
+      e.preventDefault();
+      const id = recordId.value;
+      const title = recordTitle.value.trim();
+      const body = recordBody.value.trim();
+
+      if(!title || !body) return;
+
+      if(id) {
+        // Update Existing
+        const index = state.records.findIndex(r => r.id == id);
+        if(index > -1) {
+          state.records[index].title = title;
+          state.records[index].body = body;
+          logActivity(`Updated record #${id}`);
+          showToast(`Record #${id} updated successfully`, 'success');
+        }
+      } else {
+        // Create New
+        const newId = state.records.length > 0 ? Math.max(...state.records.map(r => r.id)) + 1 : 1;
+        const newRecord = { id: newId, title, body, created_at: new Date().toISOString() };
+        state.records.unshift(newRecord); // Add to top
+        logActivity(`Created new record: ${title.substring(0,20)}...`);
+        showToast(`Record created successfully`, 'success');
+      }
+
+      saveToLocal();
+      closeModal();
+      handleSearch(); // Re-filters and re-renders table
+      renderDashboard(); // Update stats
+    }
+
+    window.deleteRecord = function(id) {
+      if(!confirm(`Are you sure you want to permanently delete record #${id}?`)) return;
+      
+      state.records = state.records.filter(r => r.id != id);
+      saveToLocal();
+      logActivity(`Deleted record #${id}`);
+      showToast(`Record deleted`, 'success');
+      
+      handleSearch();
+      renderDashboard();
+    };
+
+    window.editRecord = function(id) {
+      const record = state.records.find(r => r.id == id);
+      if(!record) return;
+
+      recordId.value = record.id;
+      recordTitle.value = record.title;
+      recordBody.value = record.body;
+      modalTitle.textContent = `Edit Record #${record.id}`;
+      
+      crudModal.classList.add('active');
+    };
+
+    /** 
+     * ==========================================
+     * VIEW ROUTING & RENDERING
+     * ==========================================
+     */
+    function renderCurrentView() {
+      if(state.currentView === 'dashboard') renderDashboard();
+      if(state.currentView === 'records') renderRecords();
+    }
+
+    function switchView(viewName, title) {
+      state.currentView = viewName;
+      topbarTitle.textContent = title;
+      
+      // Update sidebar UI
+      navItems.forEach(item => {
+        item.classList.toggle('active', item.dataset.target === viewName);
+      });
+
+      // Update sections visibility
+      viewSections.forEach(sec => {
+        sec.classList.remove('active');
+        if(sec.id === `view-${viewName}`) {
+          // slight delay for animation effect
+          setTimeout(() => sec.classList.add('active'), 50);
+        }
+      });
+
+      renderCurrentView();
+    }
+
+    // --- Dashboard Renderer ---
+    function renderDashboard() {
+      dashTotal.textContent = state.records.length;
+      
+      const d = new Date();
+      dashTime.textContent = `${d.getHours().toString().padStart(2,'0')}:${d.getMinutes().toString().padStart(2,'0')}`;
+
+      // Render Activity
+      if(state.activities.length === 0) {
+        activityFeed.innerHTML = `<p style="color:var(--text-muted); font-size:0.9rem;">No recent activity.</p>`;
+      } else {
+        activityFeed.innerHTML = state.activities.slice(0, 5).map(act => `
+          <div class="activity-item">
+            <div class="activity-marker"></div>
+            <div class="activity-content">
+              <p>${act.text}</p>
+              <span class="activity-time">${act.time}</span>
+            </div>
+          </div>
+        `).join('');
+      }
+      updateStorageMetrics();
+    }
+
+    // --- Records (Table) Renderer ---
+    function renderRecords() {
+      const start = (state.currentPage - 1) * state.itemsPerPage;
+      const end = start + state.itemsPerPage;
+      const paginatedData = state.filteredRecords.slice(start, end);
+
+      if(state.filteredRecords.length === 0) {
+        tableBody.innerHTML = `
+          <tr>
+            <td colspan="4">
+              <div class="empty-state">
+                <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20 13V6a2 2 0 00-2-2H6a2 2 0 00-2 2v7m16 0v5a2 2 0 01-2 2H6a2 2 0 01-2-2v-5m16 0h-2.586a1 1 0 00-.707.293l-2.414 2.414a1 1 0 01-.707.293h-3.172a1 1 0 01-.707-.293l-2.414-2.414A1 1 0 006.586 13H4"></path></svg>
+                <p>No records found matching your criteria.</p>
+              </div>
+            </td>
+          </tr>
+        `;
+      } else {
+        tableBody.innerHTML = paginatedData.map(record => `
+          <tr>
+            <td class="cell-id">#${record.id}</td>
+            <td class="cell-title">${escapeHtml(record.title)}</td>
+            <td class="cell-desc hide-mobile">${escapeHtml(record.body)}</td>
+            <td class="cell-actions" style="text-align: right;">
+              <button class="btn-icon" onclick="editRecord(${record.id})" title="Edit">
+                <svg width="18" height="18" fill="none" stroke="var(--primary)" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"></path></svg>
+              </button>
+              <button class="btn-icon" onclick="deleteRecord(${record.id})" title="Delete">
+                <svg width="18" height="18" fill="none" stroke="var(--danger)" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path></svg>
+              </button>
+            </td>
+          </tr>
+        `).join('');
+      }
+
+      updatePagination();
+    }
+
+    /** 
+     * ==========================================
+     * SEARCH & PAGINATION
+     * ==========================================
+     */
+    function handleSearch() {
+      const term = searchInput.value.toLowerCase();
+      if(!term) {
+        state.filteredRecords = [...state.records];
+      } else {
+        state.filteredRecords = state.records.filter(r => 
+          r.title.toLowerCase().includes(term) || 
+          r.body.toLowerCase().includes(term) ||
+          r.id.toString().includes(term)
+        );
+      }
+      state.currentPage = 1; // Reset to page 1 on search
+      renderRecords();
+    }
+
+    function updatePagination() {
+      const totalItems = state.filteredRecords.length;
+      const totalPages = Math.ceil(totalItems / state.itemsPerPage) || 1;
+      
+      const start = (state.currentPage - 1) * state.itemsPerPage + 1;
+      const end = Math.min(start + state.itemsPerPage - 1, totalItems);
+      
+      pageInfo.textContent = totalItems === 0 
+        ? `Showing 0 of 0 entries` 
+        : `Showing ${start} to ${end} of ${totalItems} entries`;
+
+      btnPrevPage.disabled = state.currentPage === 1;
+      btnNextPage.disabled = state.currentPage === totalPages;
+    }
+
+    /** 
+     * ==========================================
+     * UTILITIES & HELPERS
+     * ==========================================
+     */
+    function setupEventListeners() {
+      // Navigation
+      navItems.forEach(item => {
+        item.addEventListener('click', () => {
+          const target = item.dataset.target;
+          let title = 'Dashboard Overview';
+          if(target === 'records') title = 'Records Management';
+          if(target === 'settings') title = 'System Settings';
+          switchView(target, title);
+        });
+      });
+
+      // Modals
+      btnOpenAddModal.addEventListener('click', () => {
+        recordForm.reset();
+        recordId.value = '';
+        modalTitle.textContent = 'Create New Record';
+        crudModal.classList.add('active');
+      });
+      
+      const closeHandler = () => crudModal.classList.remove('active');
+      btnCloseModal.addEventListener('click', closeHandler);
+      btnCancelModal.addEventListener('click', closeHandler);
+      
+      // Close modal on outside click
+      crudModal.addEventListener('click', (e) => {
+        if(e.target === crudModal) closeHandler();
+      });
+
+      // Form Submits
+      recordForm.addEventListener('submit', handleSaveRecord);
+      
+      // Search Input (Debounced slightly)
+      let timeout = null;
+      searchInput.addEventListener('input', () => {
+        clearTimeout(timeout);
+        timeout = setTimeout(handleSearch, 300);
+      });
+
+      // Pagination
+      btnPrevPage.addEventListener('click', () => {
+        if(state.currentPage > 1) { state.currentPage--; renderRecords(); }
+      });
+      btnNextPage.addEventListener('click', () => {
+        const totalPages = Math.ceil(state.filteredRecords.length / state.itemsPerPage);
+        if(state.currentPage < totalPages) { state.currentPage++; renderRecords(); }
+      });
+
+      // Refresh / Seed
+      btnRefreshList.addEventListener('click', () => {
+        if(confirm("This will pull new seed data from the API and mix it with your current data. Proceed?")) {
+          seedFromAPI();
+        }
+      });
+
+      // Theme Toggle
+      themeToggle.addEventListener('change', (e) => {
+        if(e.target.checked) {
+          document.body.setAttribute('data-theme', 'dark');
+          localStorage.setItem('nexus_theme', 'dark');
+        } else {
+          document.body.removeAttribute('data-theme');
+          localStorage.setItem('nexus_theme', 'light');
+        }
+      });
+
+      // Wipe Data
+      btnWipeData.addEventListener('click', () => {
+        if(confirm('CRITICAL WARNING: This will permanently delete ALL data saved in this browser. Are you absolutely sure?')) {
+          localStorage.removeItem(DB_KEY);
+          state.records = [];
+          state.filteredRecords = [];
+          state.activities = [];
+          logActivity('System data wiped by user');
+          showToast('All local data has been wiped', 'error');
+          handleSearch();
+          renderDashboard();
+        }
+      });
+    }
+
+    function logActivity(text) {
+      const now = new Date();
+      const timeString = `${now.getHours().toString().padStart(2,'0')}:${now.getMinutes().toString().padStart(2,'0')}`;
+      state.activities.unshift({ text, time: timeString });
+    }
+
+    function updateStorageMetrics() {
+      // Rough estimation of localStorage usage
+      let total = 0;
+      for(let x in localStorage) {
+        if(localStorage.hasOwnProperty(x)) {
+          total += ((localStorage[x].length + x.length) * 2);
+        }
+      }
+      const kb = (total / 1024).toFixed(2);
+      const limitKb = 5120; // Approx 5MB typical limit
+      const percent = Math.min((kb / limitKb) * 100, 100).toFixed(1);
+      
+      if(storageBar) storageBar.style.width = `${percent}%`;
+      if(storageText) storageText.textContent = `Using ${kb} KB of local storage quota.`;
+    }
+
+    function generateSkeletons(count) {
+      return Array(count).fill(0).map(() => `
+        <tr>
+          <td><div class="skeleton skeleton-text" style="width: 40px;"></div></td>
+          <td><div class="skeleton skeleton-text"></div></td>
+          <td class="hide-mobile">
+            <div class="skeleton skeleton-text"></div>
+            <div class="skeleton skeleton-text short"></div>
+          </td>
+          <td><div class="skeleton skeleton-text" style="width: 80px; float:right;"></div></td>
+        </tr>
+      `).join('');
+    }
+
+    window.showToast = function(message, type = 'info') {
+      const container = document.getElementById('toastContainer');
+      const toast = document.createElement('div');
+      toast.className = `toast ${type}`;
+      
+      let icon = '';
+      if(type === 'success') icon = `<svg width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M5 13l4 4L19 7"></path></svg>`;
+      if(type === 'error') icon = `<svg width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>`;
+      if(type === 'info') icon = `<svg width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>`;
+
+      toast.innerHTML = `${icon} <span>${message}</span>`;
+      container.appendChild(toast);
+      
+      setTimeout(() => {
+        toast.style.transform = 'translateX(120%)';
+        toast.style.opacity = '0';
+        toast.style.transition = 'all 0.3s ease';
+        setTimeout(() => toast.remove(), 300);
+      }, 3500);
+    }
+
+    function escapeHtml(unsafe) {
+      return unsafe
+        .toString()
+        .replace(/&/g, "&amp;")
+        .replace(/</g, "&lt;")
+        .replace(/>/g, "&gt;")
+        .replace(/"/g, "&quot;")
+        .replace(/'/g, "&#039;");
+    }
+    
+    function capitalize(str) {
+      if(!str) return str;
+      return str.charAt(0).toUpperCase() + str.slice(1);
+    }
+
+    // Run the app on load
+    document.addEventListener('DOMContentLoaded', initApp);
+  </script>
+</body>
+</html>
